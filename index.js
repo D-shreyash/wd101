@@ -1,94 +1,101 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const form = document.getElementById("registrationForm");
-    const table = document
-        .getElementById("dataTable")
-        .getElementsByTagName("tbody")[0];
+document.getElementById("registrationForm").addEventListener("submit", (e) => {
+  console.log("hello");
+  e.preventDefault();
 
-    // Function to add a new row to the table
-    function addRowToTable(data) {
-        const newRow = table.insertRow();
-        newRow.insertCell().textContent = data.name;
-        newRow.insertCell().textContent = data.email;
-        newRow.insertCell().textContent = data.password;
-        newRow.insertCell().textContent = data.dob;
-        newRow.insertCell().textContent = data.termsAccepted ? "Yes" : "No";
-    }
+  // Collect form data
+  let dobInput = document.getElementById("dob").value;
+  let dobValue = dobInput;
+  dobInput = dobInput.split("-");
+  let dobY = parseInt(dobInput[0]);
+  let dobM = parseInt(dobInput[1]);
+  let dobD = parseInt(dobInput[2]);
 
-    // Load saved data from localStorage and populate the table
-    function loadTableData() {
-        let savedData;
-        try {
-            savedData = JSON.parse(localStorage.getItem("formData"));
-        } catch (e) {
-            console.error("Error parsing saved data from localStorage:", e);
-            savedData = [];
-        }
+  let todayDay = new Date();
+  todayDay = todayDay.toISOString().split("T")[0];
+  todayDay = todayDay.split("-");
+  let todayY = parseInt(todayDay[0]);
+  let todayM = parseInt(todayDay[1]);
+  let todayD = parseInt(todayDay[2]);
 
-        // Check if savedData is an array
-        if (!Array.isArray(savedData)) {
-            console.error("Saved data is not an array:", savedData);
-            savedData = [];
-        }
+  let age = todayY - dobY;
+  let monthDiff = todayM - dobM;
+  let dayDiff = todayD - dobD;
 
-        savedData.forEach((entry) => addRowToTable(entry));
-    }
+  console.log(age);
+  if (
+    age < 18 ||
+    age > 55 ||
+    (age === 55 && (monthDiff > 0 || (monthDiff === 0 && dayDiff > 0)))
+  ) {
+    alert("You must be between age 18 and 55.");
+    return;
+  }
 
-    // Handle form submission
-    form.addEventListener("submit", (event) => {
-        event.preventDefault();
+  const email = document.getElementById("email").value;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    alert("Please enter a valid email address.");
+    return;
+  }
 
-        const dobInput = document.getElementById("dob");
-        const dob = new Date(dobInput.value);
-        const today = new Date();
-        const age = today.getFullYear() - dob.getFullYear();
-        const monthDiff = today.getMonth() - dob.getMonth();
-        const dayDiff = today.getDate() - dob.getDate();
+  const name = document.getElementById("name").value;
+  const password = document.getElementById("password").value;
+  const termsAccepted = document.getElementById("terms").checked;
 
-        if (
-            age < 18 ||
-            age > 55 ||
-            (age === 55 && (monthDiff > 0 || (monthDiff === 0 && dayDiff > 0)))
-        ) {
-            alert("You must be between age 18 and 55.");
-            return;
-        }
+  const data = {
+    name,
+    email,
+    password,
+    dob: dobValue,
+    termsAccepted,
+  };
 
-        // Collect form data
-        const name = document.getElementById("name").value;
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
-        const termsAccepted = document.getElementById("terms").checked;
+  let savedData = localStorage.getItem("formData");
 
-        const data = {
-            name,
-            email,
-            password,
-            dob: dobInput.value,
-            termsAccepted,
-        };
+  let dataArray = savedData ? JSON.parse(savedData) : [];
 
-        // Retrieve existing data from localStorage, or initialize an empty array
-        let savedData;
-        try {
-            savedData = JSON.parse(localStorage.getItem("formData"));
-        } catch (e) {
-            console.error("Error parsing saved data from localStorage:", e);
-            savedData = [];
-        }
+  // Add new data to the array
+  dataArray.push(data);
 
-        // Check if savedData is an array
-        if (!Array.isArray(savedData)) {
-            console.error("Saved data is not an array:", savedData);
-            savedData = [];
-        }
+  // Store the updated data array back to localStorage
+  localStorage.setItem("formData", JSON.stringify(dataArray));
 
-        savedData.push(data);
-        localStorage.setItem("formData", JSON.stringify(savedData));
+  console.log("Data saved:", dataArray);
 
-        // Add the new data to the table
-        addRowToTable(data);
-    });
-
-    // Load data when the page loads
-    loadTableData();
+  renderTable();
 });
+
+function renderTable() {
+  let savedData = localStorage.getItem("formData");
+  let dataArray = savedData ? JSON.parse(savedData) : [];
+  const tableBody = document.querySelector("#dataTable tbody");
+  tableBody.innerHTML = ""; // Clear existing table rows
+
+  dataArray.forEach((entry) => {
+    let row = document.createElement("tr");
+
+    let nameCell = document.createElement("td");
+    nameCell.textContent = entry.name;
+    row.appendChild(nameCell);
+
+    let emailCell = document.createElement("td");
+    emailCell.textContent = entry.email;
+    row.appendChild(emailCell);
+
+    let passwordCell = document.createElement("td");
+    passwordCell.textContent = entry.password;
+    row.appendChild(passwordCell);
+
+    let dobCell = document.createElement("td");
+    dobCell.textContent = entry.dob;
+    row.appendChild(dobCell);
+
+    let termsCell = document.createElement("td");
+    termsCell.textContent = entry.termsAccepted ? "Yes" : "No";
+    row.appendChild(termsCell);
+
+    tableBody.appendChild(row);
+  });
+}
+
+window.onload = renderTable;
