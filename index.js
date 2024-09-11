@@ -1,27 +1,21 @@
 document.getElementById("registrationForm").addEventListener("submit", (e) => {
-  console.log("hello");
   e.preventDefault();
 
   // Collect form data
-  let dobInput = document.getElementById("dob").value;
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const dobInput = document.getElementById("dob").value;
+  const termsAccepted = document.getElementById("terms").checked;
+
+  // Date validation
   let dobValue = dobInput;
-  dobInput = dobInput.split("-");
-  let dobY = parseInt(dobInput[0]);
-  let dobM = parseInt(dobInput[1]);
-  let dobD = parseInt(dobInput[2]);
+  let dob = new Date(dobInput);
+  let today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  let monthDiff = today.getMonth() - dob.getMonth();
+  let dayDiff = today.getDate() - dob.getDate();
 
-  let todayDay = new Date();
-  todayDay = todayDay.toISOString().split("T")[0];
-  todayDay = todayDay.split("-");
-  let todayY = parseInt(todayDay[0]);
-  let todayM = parseInt(todayDay[1]);
-  let todayD = parseInt(todayDay[2]);
-
-  let age = todayY - dobY;
-  let monthDiff = todayM - dobM;
-  let dayDiff = todayD - dobD;
-
-  console.log(age);
   if (
     age < 18 ||
     age > 55 ||
@@ -31,17 +25,14 @@ document.getElementById("registrationForm").addEventListener("submit", (e) => {
     return;
   }
 
-  const email = document.getElementById("email").value;
+  // Email validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     alert("Please enter a valid email address.");
     return;
   }
 
-  const name = document.getElementById("name").value;
-  const password = document.getElementById("password").value;
-  const termsAccepted = document.getElementById("terms").checked;
-
+  // Create data object
   const data = {
     name,
     email,
@@ -50,8 +41,8 @@ document.getElementById("registrationForm").addEventListener("submit", (e) => {
     termsAccepted,
   };
 
+  // Retrieve existing data from localStorage
   let savedData = localStorage.getItem("formData");
-
   let dataArray = savedData ? JSON.parse(savedData) : [];
 
   // Add new data to the array
@@ -60,17 +51,18 @@ document.getElementById("registrationForm").addEventListener("submit", (e) => {
   // Store the updated data array back to localStorage
   localStorage.setItem("formData", JSON.stringify(dataArray));
 
-  console.log("Data saved:", dataArray);
-
+  // Update the table with the new data
   renderTable();
 });
 
 function renderTable() {
+  // Retrieve data from localStorage
   let savedData = localStorage.getItem("formData");
   let dataArray = savedData ? JSON.parse(savedData) : [];
   const tableBody = document.querySelector("#dataTable tbody");
   tableBody.innerHTML = ""; // Clear existing table rows
 
+  // Populate the table with data
   dataArray.forEach((entry) => {
     let row = document.createElement("tr");
 
@@ -98,4 +90,5 @@ function renderTable() {
   });
 }
 
+// Initial render of the table when the page loads
 window.onload = renderTable;
