@@ -83,7 +83,7 @@ function renderTable() {
     row.appendChild(dobCell);
 
     let termsCell = document.createElement("td");
-    termsCell.textContent = entry.termsAccepted ? "Yes" : "No";
+    termsCell.textContent = entry.termsAccepted;
     row.appendChild(termsCell);
 
     tableBody.appendChild(row);
